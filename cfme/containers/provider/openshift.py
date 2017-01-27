@@ -20,7 +20,8 @@ class OpenshiftProvider(ContainersProvider):
     db_types = ["Openshift::ContainerManager"]
 
     def __init__(self, name=None, credentials=None, key=None,
-                 zone=None, hostname=None, port=None, provider_data=None, appliance=None):
+                 zone=None, hostname=None, port=None, provider_data=None, appliance=None,
+                 hawkular_hostname=None, hawkular_api_port=None):
         super(OpenshiftProvider, self).__init__(
             name=name, credentials=credentials, key=key, zone=zone, hostname=hostname, port=port,
             provider_data=provider_data, appliance=appliance)
@@ -39,6 +40,8 @@ class OpenshiftProvider(ContainersProvider):
                 'type_select': create and 'OpenShift',
                 'hostname_text': kwargs.get('hostname'),
                 'port_text': kwargs.get('port'),
+                'hawkular_api_port_text': kwargs.get('hawkular_api_port'),
+                'hawkular_hostname_text': kwargs.get('hawkular_hostname'),
                 'zone_select': kwargs.get('zone')}
 
     @variable(alias='db')
@@ -67,6 +70,8 @@ class OpenshiftProvider(ContainersProvider):
             key=prov_key,
             zone=prov_config['server_zone'],
             hostname=prov_config.get('hostname', None) or prov_config['ip_address'],
+            hawkular_hostname=prov_config.get('hawkular_hostname'),
+            hawkular_api_port=prov_config.get('hawkular_api_port'),
             port=prov_config['port'],
             provider_data=prov_config,
             appliance=appliance)
@@ -110,7 +115,7 @@ class OpenshiftProvider(ContainersProvider):
             if fld_tp:
                 payload['resources'][i]['field_type'] = fld_tp
         return self.appliance.rest_api.post(
-            path.join(self.href(), 'custom_attributes'), **payload)
+            path.join(self._href(), 'custom_attributes'), **payload)
 
     def edit_custom_attributes(self, *custom_attributes):
         """Editing static custom attributes in provider.
