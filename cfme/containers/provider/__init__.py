@@ -44,8 +44,8 @@ properties_form_56 = TabStripForm(
             ('sec_protocol', AngularSelect("default_security_protocol", exact=True)),
         ],
         "Hawkular": [
-            ('hawkular_hostname', Input("hawkular_hostname")),
-            ('hawkular_api_port', Input("hawkular_api_port"))
+            ('hawkular_api_port_text', Input("hawkular_api_port")),
+            ('hawkular_hostname_text', Input("hawkular_hostname")),
         ],
     })
 
@@ -101,6 +101,8 @@ class ContainersProvider(BaseProvider, Pretty):
             hostname=None,
             port=None,
             provider_data=None,
+            hawkular_hostname=None,
+            hawkular_api_port=None,
             appliance=None):
         Navigatable.__init__(self, appliance=appliance)
         if not credentials:
@@ -112,6 +114,8 @@ class ContainersProvider(BaseProvider, Pretty):
         self.hostname = hostname
         self.port = port
         self.provider_data = provider_data
+        self.hawkular_hostname = hawkular_hostname
+        self.hawkular_api_port = hawkular_api_port
 
     def _on_detail_page(self):
         """ Returns ``True`` if on the providers detail page, ``False`` if not."""

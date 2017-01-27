@@ -20,10 +20,12 @@ class OpenshiftProvider(ContainersProvider):
     mgmt_class = Openshift
 
     def __init__(self, name=None, credentials=None, key=None,
-                 zone=None, hostname=None, port=None, provider_data=None):
+                 zone=None, hostname=None, port=None, provider_data=None,
+                 hawkular_hostname=None, hawkular_api_port=None):
         super(OpenshiftProvider, self).__init__(
             name=name, credentials=credentials, key=key, zone=zone, hostname=hostname, port=port,
-            provider_data=provider_data)
+            provider_data=provider_data,
+            hawkular_hostname=hawkular_hostname, hawkular_api_port=hawkular_api_port)
 
     def create(self, validate_credentials=True, **kwargs):
         # Workaround - randomly fails on 5.5.0.8 with no validation
@@ -39,6 +41,8 @@ class OpenshiftProvider(ContainersProvider):
                 'type_select': create and 'OpenShift',
                 'hostname_text': kwargs.get('hostname'),
                 'port_text': kwargs.get('port'),
+                'hawkular_api_port_text': kwargs.get('hawkular_api_port'),
+                'hawkular_hostname_text': kwargs.get('hawkular_hostname'),
                 'zone_select': kwargs.get('zone')}
 
     @variable(alias='db')
@@ -67,6 +71,8 @@ class OpenshiftProvider(ContainersProvider):
             key=prov_key,
             zone=prov_config['server_zone'],
             hostname=prov_config.get('hostname', None) or prov_config['ip_address'],
+            hawkular_hostname=prov_config.get('hawkular_hostname'),
+            hawkular_api_port=prov_config.get('hawkular_api_port'),
             port=prov_config['port'],
             provider_data=prov_config)
 
