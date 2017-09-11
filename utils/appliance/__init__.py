@@ -546,6 +546,7 @@ class IPAppliance(object):
             not recognized, but are present.
         """
         known_ems_list = []
+        self.rest_api.collections.providers._data = None
         for ems in self.rest_api.collections.providers.all:
             if not any(
                     p_type in ems['type'] for p_type in RECOGNIZED_BY_IP + RECOGNIZED_BY_CREDS):
