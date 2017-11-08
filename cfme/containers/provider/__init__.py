@@ -73,8 +73,6 @@ class ContainersProviderEndpointsForm(View):
 
     @View.nested
     class hawkular(Tab, BeforeFillMixin):  # NOQA
-        TAB_NAME = 'Hawkular'
-        sec_protocol = BootstrapSelect(id='hawkular_security_protocol')
         TAB_NAME = VersionPick({
             Version.lowest(): 'Hawkular',
             '5.9': 'Metrics'
@@ -96,6 +94,16 @@ class ContainersProviderEndpointsForm(View):
             Version.lowest(): Input('hawkular_api_port'),
             '5.9': Input('metrics_api_port')
         })
+        validate = Button('Validate')
+
+    @View.nested
+    class alerts(Tab, BeforeFillMixin):  # NOQA
+        TAB_NAME = 'Alerts'
+        sec_protocol = BootstrapSelect(id='prometheus_alerts_security_protocol')
+        # trusted_ca_certificates appears only in 5.8
+        trusted_ca_certificates = TextInput('prometheus_alerts_tls_ca_certs')
+        hostname = Input('prometheus_alerts_hostname')
+        api_port = Input('prometheus_alerts_api_port')
         validate = Button('Validate')
 
 
@@ -143,7 +151,12 @@ class ContainersProvider(BaseProvider, Pretty):
     provider_types = {}
     in_version = ('5.5', version.LATEST)
     category = "container"
-    pretty_attrs = ['name', 'key', 'zone', 'metrics_type']
+    pretty_attrs = [
+        'name',
+        'key',
+        'zone',
+        'metrics_type',
+        'alerts_type']
     STATS_TO_MATCH = [
         'num_project',
         'num_service',
@@ -169,6 +182,7 @@ class ContainersProvider(BaseProvider, Pretty):
             key=None,
             zone=None,
             metrics_type=None,
+            alerts_type=None,
             endpoints=None,
             provider_data=None,
             appliance=None):
@@ -178,7 +192,11 @@ class ContainersProvider(BaseProvider, Pretty):
         self.zone = zone
         self.endpoints = endpoints
         self.provider_data = provider_data
-        self.metrics_type = (metrics_type if self.appliance.version >= '5.9' else None)
+
+        gt_59 = True if self.appliance.version >= '5.9' else False
+
+        self.metrics_type = metrics_type if gt_59 else None
+        self.alerts_type = alerts_type if gt_59 else None
 
     @property
     def view_value_mapping(self):
@@ -186,8 +204,8 @@ class ContainersProvider(BaseProvider, Pretty):
             'name': self.name,
             'prov_type': self.type,
             'zone': self.zone,
-            'metrics_type': self.metrics_type
-        }
+            'metrics_type': self.metrics_type,
+            'alerts_type': self.alerts_type}
 
     @variable(alias='db')
     def num_project(self):

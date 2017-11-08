@@ -4,7 +4,8 @@ from widgetastic.utils import VersionPick, Version
 from widgetastic.widget import View, Text, ConditionalSwitchableView, ParametrizedView
 from widgetastic_manageiq import PaginationPane, BaseTileIconEntity, BaseQuadIconEntity, \
     BaseListEntity, NonJSBaseEntity, JSBaseEntity
-from widgetastic_patternfly import Dropdown, BootstrapSelect, FlashMessages
+from widgetastic_patternfly import Dropdown, BootstrapSelect, FlashMessages, Tab
+
 
 from cfme.base.login import BaseLoggedInPage
 from widgetastic_manageiq import (BreadCrumb,
@@ -477,6 +478,24 @@ class ContainerProviderAddViewUpdated(ContainerProviderAddView):
     metrics_type = BootstrapSelect(id='metrics_selection')
     alerts_type = BootstrapSelect(id='alerts_selection')
 
+    @View.nested
+    class proxy(Tab, BeforeFillMixin):  # NOQA
+
+        TAB_NAME = 'Proxy'
+        http_proxy = Input('provider_options_proxy_settings_http_proxy')
+
+    @View.nested
+    class advanced(Tab, BeforeFillMixin):  # NOQA
+
+        TAB_NAME = 'Advanced'
+        adv_http = Input('provider_options_image_inspector_options_http_proxy')
+        adv_https = Input('provider_options_image_inspector_options_https_proxy')
+        no_proxy = Input('provider_options_image_inspector_options_no_proxy')
+        image_repo = Input('provider_options_image_inspector_options_repository')
+        image_reg = Input('provider_options_image_inspector_options_registry')
+        image_tag = Input('provider_options_image_inspector_options_image_tag')
+        cve_loc = Input('provider_options_image_inspector_options_cve_url')
+
 
 class MiddlewareProviderAddView(ProviderAddView):
     """
@@ -551,6 +570,24 @@ class ContainerProviderEditViewUpdated(ContainerProviderEditView):
 
     metrics_type = BootstrapSelect(id='metrics_selection')
     alerts_type = BootstrapSelect(id='alerts_selection')
+
+    @View.nested
+    class proxy(Tab, BeforeFillMixin):  # NOQA
+
+        TAB_NAME = 'Proxy'
+        http_proxy = Input('provider_options_proxy_settings_http_proxy')
+
+    @View.nested
+    class advanced(Tab, BeforeFillMixin):  # NOQA
+
+        TAB_NAME = 'Advanced'
+        adv_http = Input('provider_options_image_inspector_options_http_proxy')
+        adv_https = Input('provider_options_image_inspector_options_https_proxy')
+        no_proxy = Input('provider_options_image_inspector_options_no_proxy')
+        image_repo = Input('provider_options_image_inspector_options_repository')
+        image_reg = Input('provider_options_image_inspector_options_registry')
+        image_tag = Input('provider_options_image_inspector_options_image_tag')
+        cve_loc = Input('provider_options_image_inspector_options_cve_url')
 
 
 class MiddlewareProviderEditView(ProviderEditView):

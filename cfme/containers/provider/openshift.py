@@ -55,6 +55,26 @@ class HawkularEndpoint(DefaultEndpoint):
         return out
 
 
+class AlertsEndpoint(DefaultEndpoint):
+    """Represents Alerts Endpoint"""
+    name = 'alerts'
+
+    @property
+    def view_value_mapping(self):
+        if current_version() > '5.9':
+            out = {
+                'hostname': self.hostname,
+                'api_port': self.api_port
+            }
+            if current_version() >= '5.8':
+                out['sec_protocol'] = self.sec_protocol
+                if self.sec_protocol.lower() == 'ssl trusting custom ca':
+                    out['trusted_ca_certificates'] = OpenshiftDefaultEndpoint.get_ca_cert()
+            return out
+        else:
+            return {}
+
+
 class OpenshiftProvider(ContainersProvider):
     num_route = ['num_route']
     STATS_TO_MATCH = ContainersProvider.STATS_TO_MATCH + num_route
@@ -63,11 +83,45 @@ class OpenshiftProvider(ContainersProvider):
     db_types = ["Openshift::ContainerManager"]
     endpoints_form = ContainersProviderEndpointsForm
 
-    def __init__(self, name=None, key=None, zone=None, metrics_type=None,
-                 provider_data=None, endpoints=None, appliance=None):
+    def __init__(
+            self,
+            name=None,
+            key=None,
+            zone=None,
+            metrics_type=None,
+            alerts_type=None,
+            provider_data=None,
+            endpoints=None,
+            appliance=None,
+            http_proxy=None,
+            adv_http=None,
+            adv_https=None,
+            no_proxy=None,
+            image_repo=None,
+            image_reg=None,
+            image_tag=None,
+            cve_loc=None):
+
+        gt_59 = True if self.appliance.version >= '5.9' else False
+
+        self.http_proxy = http_proxy if gt_59 else None
+        self.adv_http = adv_http if gt_59 else None
+        self.adv_https = adv_https if gt_59 else None
+        self.no_proxy = no_proxy if gt_59 else None
+        self.image_repo = image_repo if gt_59 else None
+        self.image_reg = image_reg if gt_59 else None
+        self.image_tag = image_tag if gt_59 else None
+        self.cve_loc = cve_loc if gt_59 else None
+
         super(OpenshiftProvider, self).__init__(
-            name=name, key=key, zone=zone, metrics_type=metrics_type, provider_data=provider_data,
-            endpoints=endpoints, appliance=appliance)
+            name=name,
+            key=key,
+            zone=zone,
+            metrics_type=metrics_type,
+            provider_data=provider_data,
+            alerts_type=alerts_type,
+            endpoints=endpoints,
+            appliance=appliance)
 
     @cached_property
     def cli(self):
@@ -83,13 +137,28 @@ class OpenshiftProvider(ContainersProvider):
         mapping = {
             'name': self.name,
             'zone': self.zone,
-            'metrics_type': self.metrics_type
+            'metrics_type': self.metrics_type,
+            'alerts_type': self.alerts_type
         }
 
         mapping['prov_type'] = (
             'OpenShift Container Platform'
             if self.appliance.is_downstream
             else 'OpenShift')
+
+        mapping['proxy'] = {
+            'http_proxy': self.http_proxy
+        }
+
+        mapping['advanced'] = {
+            'adv_http': self.adv_http,
+            'adv_https': self.adv_https,
+            'no_proxy': self.no_proxy,
+            'image_repo': self.image_repo,
+            'image_reg': self.image_reg,
+            'image_tag': self.image_tag,
+            'cve_loc': self.cve_loc
+        }
 
         return mapping
 
@@ -120,18 +189,38 @@ class OpenshiftProvider(ContainersProvider):
                 endpoints[endp] = OpenshiftDefaultEndpoint(**prov_config['endpoints'][endp])
             elif HawkularEndpoint.name == endp:
                 endpoints[endp] = HawkularEndpoint(**prov_config['endpoints'][endp])
+            elif AlertsEndpoint.name == endp:
+                endpoints[endp] = AlertsEndpoint(**prov_config['endpoints'][endp])
             # TODO Add Prometheus and logic for having to select or the other based on metrcis_type
             else:
                 raise Exception('Unsupported endpoint type "{}".'.format(endp))
+
+        http_proxy = prov_config.get('settings', {}).get('proxy', {}).get('http_proxy')
+        adv_http = prov_config.get('settings', {}).get('advanced', {}).get('adv_http')
+        adv_https = prov_config.get('settings', {}).get('advanced', {}).get('adv_https')
+        no_proxy = prov_config.get('settings', {}).get('advanced', {}).get('no_proxy')
+        image_repo = prov_config.get('settings', {}).get('advanced', {}).get('image_repo')
+        image_reg = prov_config.get('settings', {}).get('advanced', {}).get('image_reg')
+        image_tag = prov_config.get('settings', {}).get('advanced', {}).get('image_tag')
+        cve_loc = prov_config.get('settings', {}).get('advanced', {}).get('cve_loc')
 
         return cls(
             name=prov_config.get('name'),
             key=prov_key,
             zone=prov_config.get('server_zone'),
             metrics_type=prov_config.get('metrics_type'),
+            alerts_type=prov_config.get('alerts_type'),
             endpoints=endpoints,
             provider_data=prov_config,
-            appliance=appliance
+            appliance=appliance,
+            http_proxy=http_proxy,
+            adv_http=adv_http,
+            adv_https=adv_https,
+            no_proxy=no_proxy,
+            image_repo=image_repo,
+            image_reg=image_reg,
+            image_tag=image_tag,
+            cve_loc=cve_loc
         )
 
     def custom_attributes(self):
