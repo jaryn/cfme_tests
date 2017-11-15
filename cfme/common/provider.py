@@ -178,9 +178,10 @@ class BaseProvider(WidgetasticTaggable, Updateable, SummaryMixin, Navigatable):
                         logger.info(
                             'Validating credentials flash message for endpoint %s',
                             endpoint_name)
-                        add_view.flash.assert_no_error()
-                        add_view.flash.assert_success_message(
-                            'Credential validation was successful')
+                if (validate_credentials):
+                    add_view.flash.assert_no_error()
+                    add_view.flash.assert_success_message(
+                        'Credential validation was successful')
 
             main_view = self.create_view(navigator.get_class(self, 'All').VIEW)
             if cancel:
