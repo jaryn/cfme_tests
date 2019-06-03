@@ -1046,6 +1046,7 @@ ExecStartPre=/usr/bin/bash -c "ipcs -s|grep apache|cut -d\  -f2|while read line;
                 'container': self.container,
                 'is_pod': self.is_pod,
                 'port': self.ssh_port,
+                'strict_host_key_checking': False,
             }
         if self.is_dev:
             connect_kwargs.update({'is_dev': True})
