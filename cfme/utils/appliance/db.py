@@ -33,7 +33,8 @@ class ApplianceDB(AppliancePlugin):
 
     @property
     def pg_prefix(self):
-        return '/opt/rh/rh-postgresql95/root' if self.appliance.version < '5.11' else ''
+        return ('/opt/rh/rh-postgresql95/root/pgsql' if self.appliance.version < '5.11'
+                else '/var/lib/pgsql')
 
     @cached_property
     def client(self):
