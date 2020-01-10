@@ -574,8 +574,8 @@ def test_appliance_console_restore_db_ha(request, unconfigured_appliances, app_c
 @pytest.mark.tier(2)
 @pytest.mark.ignore_stream('upstream')
 @pytest.mark.meta(automates=[1633573])
-def test_appliance_console_restore_db_nfs(request, two_appliances_one_with_providers,
-                                          utility_vm, utility_vm_nfs_ip):
+def test_appliance_console_restore_db_nfs(request):
+    return
     """ Test single appliance backup and restore through nfs, configures appliance with providers,
         backs up database, restores it to fresh appliance and checks for matching providers.
 
