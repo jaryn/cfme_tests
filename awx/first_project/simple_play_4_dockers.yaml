@@ -1,0 +1,5 @@
+---                                                                   
+- hosts: all
+  tasks:    
+    - name: Create empty file in /var/tmp/
+      file: path=/var/tmp/touch_from_play.txt state=touch mode="u=rw,g=r,o=r"
